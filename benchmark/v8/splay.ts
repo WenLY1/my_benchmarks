@@ -1,9 +1,8 @@
+import { BenchmarkSuite, Benchmark } from './base';
 
-import { BenchmarkSuite, Benchmark } from "./base";
-
-export function createSplayTest(){
-    var Splay = new BenchmarkSuite('Splay', 81491, [
-        new Benchmark("Splay", SplayRun, SplaySetup, SplayTearDown)
+export function createSplayTest() {
+    const Splay = new BenchmarkSuite('Splay', 81491, [
+        new Benchmark('Splay', SplayRun, SplaySetup, SplayTearDown),
     ]);
 }
 
@@ -14,16 +13,14 @@ const kSplayTreePayloadDepth = 5;
 let splayTree: SplayTree | undefined = undefined;
 
 class SplayTreeNode {
-    constructor(public key: number, public value: any) {
-
-    }
+    constructor(public key: number, public value: any) {}
     left: SplayTreeNode | undefined = undefined;
     right: SplayTreeNode | undefined = undefined;
 
     traverse_(f: (node: SplayTreeNode) => void) {
         let current: SplayTreeNode | undefined = this;
         while (current) {
-            var left = current.left;
+            const left = current.left;
             if (left) left.traverse_(f);
             f(current);
             current = current.right;
@@ -32,7 +29,6 @@ class SplayTreeNode {
 }
 
 class SplayTree {
-
     root_: SplayTreeNode | undefined = undefined;
     letf: SplayTreeNode | undefined = undefined;
 
@@ -51,7 +47,7 @@ class SplayTree {
             return;
         }
 
-        let node = new SplayTreeNode(key, value);
+        const node = new SplayTreeNode(key, value);
 
         if (key > this.root_!.key) {
             node.left = this.root_;
@@ -73,11 +69,11 @@ class SplayTree {
         if (this.root_!.key != key) {
             throw Error('Key not found: ' + key);
         }
-        var removed = this.root_;
+        const removed = this.root_;
         if (!this.root_!.left) {
             this.root_ = this.root_!.right;
         } else {
-            var right = this.root_!.right;
+            const right = this.root_!.right;
             this.root_ = this.root_!.left;
             // Splay to make sure that the new root has an empty right child.
             this.splay_(key);
@@ -100,7 +96,7 @@ class SplayTree {
         if (this.isEmpty()) {
             return null;
         }
-        var current = opt_startNode || this.root_;
+        let current = opt_startNode || this.root_;
         while (current?.right) {
             current = current?.right;
         }
@@ -126,9 +122,11 @@ class SplayTree {
     }
 
     exportKeys() {
-        let result: number[] = [];
+        const result: number[] = [];
         if (!this.isEmpty()) {
-            this.root_!.traverse_(function (node) { result.push(node.key); });
+            this.root_!.traverse_(function (node) {
+                result.push(node.key);
+            });
         }
         return result;
     }
@@ -142,9 +140,9 @@ class SplayTree {
         // the L tree of the algorithm.  The left child of the dummy node
         // will hold the R tree of the algorithm.  Using a dummy node, left
         // and right will always be nodes and we avoid special cases.
-        var dummy: SplayTreeNode, left: SplayTreeNode, right: SplayTreeNode;
+        let dummy: SplayTreeNode, left: SplayTreeNode, right: SplayTreeNode;
         dummy = left = right = new SplayTreeNode(0, null);
-        var current = this.root_!;
+        let current = this.root_!;
         while (true) {
             if (key < current.key) {
                 if (!current.left) {
@@ -193,25 +191,21 @@ class SplayTree {
         current.right = dummy.left;
         this.root_ = current;
     }
-
-
-
 }
 
 function GeneratePayloadTree(depth: number, tag: string): any {
     if (depth == 0) {
         return {
             array: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            string: 'String for key ' + tag + ' in leaf node'
+            string: 'String for key ' + tag + ' in leaf node',
         };
     } else {
         return {
             left: GeneratePayloadTree(depth - 1, tag),
-            right: GeneratePayloadTree(depth - 1, tag)
+            right: GeneratePayloadTree(depth - 1, tag),
         };
     }
 }
-
 
 function GenerateKey() {
     // The benchmark framework guarantees that Math.random is
@@ -225,40 +219,40 @@ function InsertNewNode() {
     do {
         key = GenerateKey();
     } while (splayTree?.find(key) != null);
-    var payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
+    const payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
     splayTree?.insert(key, payload);
     return key;
 }
 
 function SplaySetup() {
     splayTree = new SplayTree();
-    for (var i = 0; i < kSplayTreeSize; i++) InsertNewNode();
+    for (let i = 0; i < kSplayTreeSize; i++) InsertNewNode();
 }
 
 function SplayTearDown() {
     // Allow the garbage collector to reclaim the memory
     // used by the splay tree no matter how we exit the
     // tear down function.
-    var keys = splayTree!.exportKeys();
+    const keys = splayTree!.exportKeys();
     splayTree = undefined;
     // Verify that the splay tree has the right size.
-    var length = keys.length;
+    const length = keys.length;
     if (length != kSplayTreeSize) {
-        throw new Error("Splay tree has wrong size");
+        throw new Error('Splay tree has wrong size');
     }
     // Verify that the splay tree has sorted, unique keys.
-    for (var i = 0; i < length - 1; i++) {
+    for (let i = 0; i < length - 1; i++) {
         if (keys[i] >= keys[i + 1]) {
-            throw new Error("Splay tree not sorted");
+            throw new Error('Splay tree not sorted');
         }
     }
 }
 
 function SplayRun() {
     // Replace a few nodes in the splay tree.
-    for (var i = 0; i < kSplayTreeModifications; i++) {
-        var key = InsertNewNode();
-        var greatest = splayTree!.findGreatestLessThan(key);
+    for (let i = 0; i < kSplayTreeModifications; i++) {
+        const key = InsertNewNode();
+        const greatest = splayTree!.findGreatestLessThan(key);
         if (greatest == null) splayTree!.remove(key);
         else splayTree!.remove(greatest.key);
     }

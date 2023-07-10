@@ -1,2 +1,2 @@
-tsc run.ts
+tsc
 node run.js

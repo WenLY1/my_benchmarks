@@ -1,7 +1,12 @@
 export class Benchmark {
-    constructor(public name: string, public run: () => void, public setup?: () => void, public tearDown?: () => void) {
-        this.setup = this.setup ?? function () { };
-        this.tearDown = this.tearDown ?? function () { };
+    constructor(
+        public name: string,
+        public run: () => void,
+        public setup?: () => void,
+        public tearDown?: () => void,
+    ) {
+        this.setup = this.setup ?? function () {};
+        this.tearDown = this.tearDown ?? function () {};
     }
 }
 
@@ -42,21 +47,21 @@ export class BenchmarkSuite {
     public static suites: BenchmarkSuite[] = [];
     public static scores: number[];
     public reference: number;
-    public static version: string = '7';
+    public static version = '7';
     public results: number[] = [];
     public runner: IRunner | null = null;
     static RunSuites(runner: IRunner) {
-        var continuation: any = undefined;
-        var suites: BenchmarkSuite[] = BenchmarkSuite.suites;
-        var length: number = suites.length;
+        let continuation: any = undefined;
+        const suites: BenchmarkSuite[] = BenchmarkSuite.suites;
+        const length: number = suites.length;
         BenchmarkSuite.scores = [];
-        var index: number = 0;
+        let index = 0;
         function RunStep(): void {
             while (continuation || index < length) {
                 if (continuation) {
                     continuation = continuation();
                 } else {
-                    var suite = suites[index++];
+                    const suite = suites[index++];
                     if (runner.NotifyStart) runner.NotifyStart(suite.name);
                     continuation = suite.RunStep(runner);
                 }
@@ -66,8 +71,12 @@ export class BenchmarkSuite {
                 // }
             }
             if (runner.NotifyScore) {
-                var score: number = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
-                var formatted: string = BenchmarkSuite.FormatScore(100 * score);
+                const score: number = BenchmarkSuite.GeometricMean(
+                    BenchmarkSuite.scores,
+                );
+                const formatted: string = BenchmarkSuite.FormatScore(
+                    100 * score,
+                );
                 runner.NotifyScore(formatted);
             }
         }
@@ -75,17 +84,17 @@ export class BenchmarkSuite {
     }
 
     CountBenchmarks(): number {
-        var result: number = 0;
-        var suites: BenchmarkSuite[] = BenchmarkSuite.suites;
-        for (var i = 0; i < suites.length; i++) {
+        let result = 0;
+        const suites: BenchmarkSuite[] = BenchmarkSuite.suites;
+        for (let i = 0; i < suites.length; i++) {
             result += suites[i].benchmarks.length;
         }
         return result;
     }
 
     static GeometricMean(numbers: number[]): number {
-        var log: number = 0;
-        for (var i: number = 0; i < numbers.length; i++) {
+        let log = 0;
+        for (let i = 0; i < numbers.length; i++) {
             log += Math.log(numbers[i]);
         }
         return Math.pow(Math.E, log / numbers.length);
@@ -102,15 +111,16 @@ export class BenchmarkSuite {
 
     NotifyStep(result: BenchmarkResult): void {
         this.results.push(result.time);
-        if (this.runner!.NotifyStep) this.runner!.NotifyStep(result.benchmark.name);
+        if (this.runner!.NotifyStep)
+            this.runner!.NotifyStep(result.benchmark.name);
     }
 
     NotifyResult(): void {
-        var mean: number = BenchmarkSuite.GeometricMean(this.results);
-        var score: number = this.reference / mean;
+        const mean: number = BenchmarkSuite.GeometricMean(this.results);
+        const score: number = this.reference / mean;
         BenchmarkSuite.scores.push(score);
         if (this.runner!.NotifyResult) {
-            var formatted: string = BenchmarkSuite.FormatScore(100 * score);
+            const formatted: string = BenchmarkSuite.FormatScore(100 * score);
             this.runner!.NotifyResult(this.name, formatted);
         }
     }
@@ -124,10 +134,13 @@ export class BenchmarkSuite {
         }
     }
 
-    RunSingleBenchmark(benchmark: Benchmark, data: IData | undefined): IData | undefined {
+    RunSingleBenchmark(
+        benchmark: Benchmark,
+        data: IData | undefined,
+    ): IData | undefined {
         function Measure(data?: IData) {
-            var elapsed: number = 0;
-            var start: number = Date.now();
+            let elapsed = 0;
+            const start: number = Date.now();
             for (var n = 0; elapsed < 1000; n++) {
                 benchmark.run();
                 elapsed = Date.now() - start;
@@ -147,7 +160,7 @@ export class BenchmarkSuite {
             Measure(data);
             // If we've run too few iterations, we continue for another second.
             if (data.runs < 32) return data;
-            var usec = (data.elapsed * 1000) / data.runs;
+            const usec = (data.elapsed * 1000) / data.runs;
             this.NotifyStep(new BenchmarkResult(benchmark, usec));
             return undefined;
         }
@@ -156,10 +169,10 @@ export class BenchmarkSuite {
     RunStep(runner: IRunner) {
         this.results = [];
         this.runner = runner;
-        var length: number = this.benchmarks.length;
-        var index: number = 0;
-        var suite: BenchmarkSuite = this;
-        var data: IData | undefined;
+        const length: number = this.benchmarks.length;
+        let index = 0;
+        const suite: BenchmarkSuite = this;
+        let data: IData | undefined;
         // Run the setup, the actual benchmark, and the tear down in three
         // separate steps to allow the framework to yield between any of the
         // steps.
@@ -186,12 +199,12 @@ export class BenchmarkSuite {
                 return null;
             }
             // If data is null, we're done with this benchmark.
-            return (data == undefined) ? RunNextTearDown : RunNextBenchmark();
+            return data == undefined ? RunNextTearDown : RunNextBenchmark();
         }
         function RunNextTearDown() {
             try {
                 index++;
-                if(index < suite.benchmarks.length){
+                if (index < suite.benchmarks.length) {
                     suite.benchmarks[index].tearDown!();
                 }
             } catch (e: any) {
@@ -206,15 +219,15 @@ export class BenchmarkSuite {
 }
 
 Math.random = (function (): () => number {
-    var seed = 49734321;
+    let seed = 49734321;
     return function () {
         // Robert Jenkins' 32 bit integer hash function.
-        seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
-        seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-        seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
+        seed = (seed + 0x7ed55d16 + (seed << 12)) & 0xffffffff;
+        seed = (seed ^ 0xc761c23c ^ (seed >>> 19)) & 0xffffffff;
+        seed = (seed + 0x165667b1 + (seed << 5)) & 0xffffffff;
         seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
-        seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
-        seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+        seed = (seed + 0xfd7046c5 + (seed << 3)) & 0xffffffff;
+        seed = (seed ^ 0xb55a4f09 ^ (seed >>> 16)) & 0xffffffff;
         return (seed & 0xfffffff) / 0x10000000;
     };
 })();

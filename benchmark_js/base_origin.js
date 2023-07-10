@@ -201,7 +201,9 @@ BenchmarkSuite.prototype.RunStep = function (runner) {
     }
     function RunNextTearDown() {
         try {
+            
             suite.benchmarks[index++].TearDown();
+            console.log(index, suite.benchmarks.length);
         } catch (e) {
             suite.NotifyError(e);
             return null;

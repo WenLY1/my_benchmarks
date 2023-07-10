@@ -1,1 +1,2 @@
-to run the benchmark, try "node run.js"
+## how to use
+<code>node run.js</code>

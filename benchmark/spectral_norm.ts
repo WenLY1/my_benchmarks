@@ -45,4 +45,4 @@ function multiplyAtAv(n: number, v: number[], atAv: number[]) {
     multiplyAtv(n, u, atAv);
 }
 
-// console.log(approximate(+process.argv[2]).toFixed(9));
+console.log(approximate(1000));
